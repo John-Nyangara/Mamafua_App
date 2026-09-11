@@ -14,6 +14,7 @@ import com.mamafua.app.presentation.auth.screen.RegisterScreen
 import com.mamafua.app.presentation.auth.screen.SplashScreen
 import com.mamafua.app.presentation.client.ClientHomeScreen
 import com.mamafua.app.presentation.job.JobDetailsScreen
+import com.mamafua.app.presentation.payment.PaymentStkScreen
 import com.mamafua.app.presentation.profile.ClientProfileScreen
 import com.mamafua.app.presentation.profile.WorkerProfileScreen
 import com.mamafua.app.presentation.main.viewmodel.AuthState
@@ -92,6 +93,14 @@ fun AppNavigation(
         }
         composable("worker_profile") {
             WorkerProfileScreen()
+        }
+        composable(
+            route = "payment/{jobId}",
+            arguments = listOf(navArgument("jobId") { type = NavType.IntType })
+        ) {
+            PaymentStkScreen(
+                onPaymentComplete = { navController.popBackStack() }
+            )
         }
     }
 }
