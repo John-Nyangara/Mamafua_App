@@ -11,7 +11,8 @@ import org.koin.androidx.compose.koinViewModel
 
 @Composable
 fun ClientHomeScreen(
-    viewModel: ClientHomeViewModel = koinViewModel()
+    viewModel: ClientHomeViewModel = koinViewModel(),
+    onNavigateToProfile: () -> Unit = {}
 ) {
     val workers by viewModel.workers.collectAsState()
 
@@ -21,7 +22,12 @@ fun ClientHomeScreen(
     }
 
     Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
-        Text("Nearby Workers", style = MaterialTheme.typography.headlineMedium)
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
+            Text("Nearby Workers", style = MaterialTheme.typography.headlineMedium)
+            TextButton(onClick = onNavigateToProfile) {
+                Text("Profile")
+            }
+        }
         Spacer(modifier = Modifier.height(16.dp))
 
         LazyColumn {

@@ -13,12 +13,18 @@ import org.koin.androidx.compose.koinViewModel
 @Composable
 fun WorkerHomeScreen(
     viewModel: WorkerHomeViewModel = koinViewModel(),
-    onNavigateToJobDetails: (Int) -> Unit = {}
+    onNavigateToJobDetails: (Int) -> Unit = {},
+    onNavigateToProfile: () -> Unit = {}
 ) {
     val jobs by viewModel.availableJobs.collectAsState()
 
     Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
-        Text("Available Jobs", style = MaterialTheme.typography.headlineMedium)
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
+            Text("Available Jobs", style = MaterialTheme.typography.headlineMedium)
+            TextButton(onClick = onNavigateToProfile) {
+                Text("Profile")
+            }
+        }
         Spacer(modifier = Modifier.height(16.dp))
 
         LazyColumn {

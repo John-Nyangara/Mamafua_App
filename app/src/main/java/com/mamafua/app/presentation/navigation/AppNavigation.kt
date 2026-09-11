@@ -14,6 +14,8 @@ import com.mamafua.app.presentation.auth.screen.RegisterScreen
 import com.mamafua.app.presentation.auth.screen.SplashScreen
 import com.mamafua.app.presentation.client.ClientHomeScreen
 import com.mamafua.app.presentation.job.JobDetailsScreen
+import com.mamafua.app.presentation.profile.ClientProfileScreen
+import com.mamafua.app.presentation.profile.WorkerProfileScreen
 import com.mamafua.app.presentation.main.viewmodel.AuthState
 import com.mamafua.app.presentation.main.viewmodel.MainViewModel
 import com.mamafua.app.presentation.worker.WorkerHomeScreen
@@ -64,11 +66,14 @@ fun AppNavigation(
         }
 
         composable("client_home") {
-            ClientHomeScreen()
+            ClientHomeScreen(
+                onNavigateToProfile = { navController.navigate("client_profile") }
+            )
         }
         composable("worker_home") {
             WorkerHomeScreen(
-                onNavigateToJobDetails = { jobId -> navController.navigate("job_details/$jobId") }
+                onNavigateToJobDetails = { jobId -> navController.navigate("job_details/$jobId") },
+                onNavigateToProfile = { navController.navigate("worker_profile") }
             )
         }
         composable(
@@ -80,6 +85,13 @@ fun AppNavigation(
                 isClient = isClient,
                 onNavigateToPayment = { jobId -> navController.navigate("payment/$jobId") }
             )
+        }
+        
+        composable("client_profile") {
+            ClientProfileScreen()
+        }
+        composable("worker_profile") {
+            WorkerProfileScreen()
         }
     }
 }
