@@ -3,14 +3,17 @@ package com.mamafua.app.presentation.navigation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.mamafua.app.presentation.auth.screen.ForgotPasswordScreen
 import com.mamafua.app.presentation.auth.screen.LoginScreen
 import com.mamafua.app.presentation.auth.screen.RegisterScreen
 import com.mamafua.app.presentation.auth.screen.SplashScreen
 import com.mamafua.app.presentation.client.ClientHomeScreen
+import com.mamafua.app.presentation.job.JobDetailsScreen
 import com.mamafua.app.presentation.main.viewmodel.AuthState
 import com.mamafua.app.presentation.main.viewmodel.MainViewModel
 import com.mamafua.app.presentation.worker.WorkerHomeScreen
@@ -64,7 +67,19 @@ fun AppNavigation(
             ClientHomeScreen()
         }
         composable("worker_home") {
-            WorkerHomeScreen()
+            WorkerHomeScreen(
+                onNavigateToJobDetails = { jobId -> navController.navigate("job_details/$jobId") }
+            )
+        }
+        composable(
+            route = "job_details/{jobId}",
+            arguments = listOf(navArgument("jobId") { type = NavType.IntType })
+        ) {
+            val isClient = authState is AuthState.AuthenticatedClient
+            JobDetailsScreen(
+                isClient = isClient,
+                onNavigateToPayment = { jobId -> navController.navigate("payment/$jobId") }
+            )
         }
     }
 }

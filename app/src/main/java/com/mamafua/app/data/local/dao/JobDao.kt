@@ -12,6 +12,9 @@ interface JobDao {
     @Query("SELECT * FROM jobs")
     fun getAllJobs(): Flow<List<JobEntity>>
 
+    @Query("SELECT * FROM jobs WHERE id = :jobId LIMIT 1")
+    fun getJob(jobId: Int): Flow<JobEntity?>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertJobs(jobs: List<JobEntity>)
 

@@ -12,6 +12,7 @@ import com.mamafua.app.presentation.auth.viewmodel.RegisterViewModel
 import com.mamafua.app.presentation.main.viewmodel.MainViewModel
 import com.mamafua.app.presentation.client.ClientHomeViewModel
 import com.mamafua.app.presentation.worker.WorkerHomeViewModel
+import com.mamafua.app.presentation.job.JobDetailsViewModel
 import org.koin.android.ext.koin.androidContext
 import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.dsl.module
@@ -54,6 +55,7 @@ val viewModelModule = module {
     viewModel { MainViewModel(get(), get()) }
     viewModel { ClientHomeViewModel(get()) }
     viewModel { WorkerHomeViewModel(get()) }
+    viewModel { JobDetailsViewModel(get(), get()) }
 }
 
 val appModules = listOf(networkModule, databaseModule, repositoryModule, viewModelModule)

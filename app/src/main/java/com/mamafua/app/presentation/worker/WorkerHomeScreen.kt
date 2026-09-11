@@ -1,5 +1,6 @@
 package com.mamafua.app.presentation.worker
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -11,7 +12,8 @@ import org.koin.androidx.compose.koinViewModel
 
 @Composable
 fun WorkerHomeScreen(
-    viewModel: WorkerHomeViewModel = koinViewModel()
+    viewModel: WorkerHomeViewModel = koinViewModel(),
+    onNavigateToJobDetails: (Int) -> Unit = {}
 ) {
     val jobs by viewModel.availableJobs.collectAsState()
 
@@ -21,7 +23,7 @@ fun WorkerHomeScreen(
 
         LazyColumn {
             items(jobs) { job ->
-                Card(modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)) {
+                Card(modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp).clickable { onNavigateToJobDetails(job.id) }) {
                     Column(modifier = Modifier.padding(16.dp)) {
                         Text(job.title, style = MaterialTheme.typography.titleMedium)
                         Text("Budget: KES ${job.budget}")

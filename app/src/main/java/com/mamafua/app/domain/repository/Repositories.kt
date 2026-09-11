@@ -17,6 +17,7 @@ interface UserRepository {
 interface JobRepository {
     suspend fun fetchJobs(status: String? = null)
     fun getActiveJobs(): Flow<List<Job>>
+    fun getJob(jobId: Int): Flow<Job?>
     suspend fun createJob(title: String, description: String, location: String, budget: Double): Job
     suspend fun applyForJob(jobId: Int)
     suspend fun acceptWorker(jobId: Int, workerId: Int)
