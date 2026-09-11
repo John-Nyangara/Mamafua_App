@@ -7,7 +7,10 @@ import com.mamafua.app.data.remote.api.*
 import com.mamafua.app.data.remote.createHttpClient
 import com.mamafua.app.data.repository.*
 import com.mamafua.app.domain.repository.*
+import com.mamafua.app.presentation.auth.viewmodel.LoginViewModel
+import com.mamafua.app.presentation.auth.viewmodel.RegisterViewModel
 import org.koin.android.ext.koin.androidContext
+import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.dsl.module
 
 val networkModule = module {
@@ -43,7 +46,8 @@ val repositoryModule = module {
 }
 
 val viewModelModule = module {
-    // ViewModels will be added here in Phase 5 and 6
+    viewModel { LoginViewModel(get()) }
+    viewModel { RegisterViewModel(get()) }
 }
 
 val appModules = listOf(networkModule, databaseModule, repositoryModule, viewModelModule)
