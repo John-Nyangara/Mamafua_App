@@ -18,7 +18,7 @@ class MainViewModel(
         if (token.isNullOrEmpty() || user == null) {
             AuthState.Unauthenticated
         } else {
-            if (user.role == "Client") AuthState.AuthenticatedClient else AuthState.AuthenticatedWorker
+            if (user.role.equals("CLIENT", ignoreCase = true)) AuthState.AuthenticatedClient else AuthState.AuthenticatedWorker
         }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), AuthState.Loading)
 }

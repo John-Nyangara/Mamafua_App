@@ -11,7 +11,7 @@ import com.mamafua.app.data.local.entity.UserEntity
 
 @Database(
     entities = [UserEntity::class, JobEntity::class, NotificationEntity::class],
-    version = 1,
+    version = 3,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {

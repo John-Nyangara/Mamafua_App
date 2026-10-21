@@ -36,6 +36,7 @@ class LoginViewModel(
                 authRepository.login(state.email, state.password)
                 _uiState.value = _uiState.value.copy(isLoading = false, isSuccess = true)
             } catch (e: Exception) {
+                android.util.Log.e("LoginViewModel", "Error during login", e)
                 _uiState.value = _uiState.value.copy(isLoading = false, error = e.message ?: "An unexpected error occurred")
             }
         }
