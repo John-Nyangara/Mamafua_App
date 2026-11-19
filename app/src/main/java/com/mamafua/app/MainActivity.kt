@@ -18,12 +18,9 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            MamafuaTheme {
+            com.mamafua.app.ui.theme.MamafuaTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "Android",
-                        modifier = Modifier.padding(innerPadding)
-                    )
+                    com.mamafua.app.presentation.navigation.AppNavigation(modifier = Modifier.padding(innerPadding))
                 }
             }
         }
