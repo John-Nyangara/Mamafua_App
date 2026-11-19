@@ -18,7 +18,11 @@ class MainViewModel(
         if (token.isNullOrEmpty() || user == null) {
             AuthState.Unauthenticated
         } else {
-            if (user.role.equals("CLIENT", ignoreCase = true)) AuthState.AuthenticatedClient else AuthState.AuthenticatedWorker
+            when {
+                user.role.equals("ADMIN", ignoreCase = true) -> AuthState.AuthenticatedAdmin
+                user.role.equals("CLIENT", ignoreCase = true) -> AuthState.AuthenticatedClient
+                else -> AuthState.AuthenticatedWorker
+            }
         }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), AuthState.Loading)
 }
@@ -28,4 +32,5 @@ sealed class AuthState {
     object Unauthenticated : AuthState()
     object AuthenticatedClient : AuthState()
     object AuthenticatedWorker : AuthState()
+    object AuthenticatedAdmin : AuthState()
 }

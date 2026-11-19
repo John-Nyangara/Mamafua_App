@@ -1,17 +1,28 @@
+@file:OptIn(kotlinx.serialization.ExperimentalSerializationApi::class)
+
 package com.mamafua.app.domain.model
 
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.SerialName
+import kotlinx.serialization.json.JsonNames
 
 @Serializable
 data class Payment(
-    val id: Int,
-    @SerialName("job_id") val jobId: Int,
-    val amount: Double,
-    val currency: String? = null,
-    val status: String,
-    @SerialName("mpesa_receipt_number") val mpesaReceiptNumber: String? = null,
-    @SerialName("result_description") val resultDescription: String? = null,
-    @SerialName("paid_at") val paidAt: String? = null,
-    @SerialName("created_at") val createdAt: String? = null
+    val id: Int = 0,
+    @JsonNames("job_id", "jobId")
+    val jobId: Int = 0,
+    val amount: Double = 0.0,
+    val currency: String? = "KES",
+    val status: String = "pending",
+    @JsonNames("payment_type", "paymentType")
+    val paymentType: String? = null,
+    @JsonNames("checkout_request_id", "checkoutRequestId")
+    val checkoutRequestId: String? = null,
+    @JsonNames("mpesa_receipt_number", "mpesaReceiptNumber")
+    val mpesaReceiptNumber: String? = null,
+    @JsonNames("result_description", "resultDescription")
+    val resultDescription: String? = null,
+    @JsonNames("paid_at", "paidAt")
+    val paidAt: String? = null,
+    @JsonNames("created_at", "createdAt")
+    val createdAt: String? = null
 )

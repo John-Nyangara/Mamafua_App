@@ -1,13 +1,10 @@
 package com.mamafua.app.presentation.client
 
 import android.widget.Toast
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.*
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.slideInVertically
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
@@ -19,15 +16,16 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.mamafua.app.ui.components.*
 import com.mamafua.app.ui.theme.*
-import kotlinx.coroutines.delay
 import org.koin.androidx.compose.koinViewModel
 import org.koin.core.parameter.parametersOf
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun ClientJobApplicantsScreen(
     jobId: Int,
     onBack: () -> Unit,
-    viewModel: ClientJobApplicantsViewModel = koinViewModel { parametersOf(jobId) }
+    onAccepted: (Int) -> Unit = { onBack() },
+    viewModel: ClientJobApplicantsViewModel = koinViewModel(key = "applicants_$jobId") { parametersOf(jobId) }
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val context = LocalContext.current
@@ -36,7 +34,7 @@ fun ClientJobApplicantsScreen(
         uiState.successMessage?.let {
             Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
             if (uiState.acceptedWorker) {
-                onBack()
+                onAccepted(jobId)
             }
             viewModel.clearMessages()
         }
@@ -47,32 +45,12 @@ fun ClientJobApplicantsScreen(
     }
 
     Column(modifier = Modifier.fillMaxSize()) {
-        // ── Header with Back Button ──
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 40.dp, start = 16.dp, end = 16.dp, bottom = 16.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            IconButton(onClick = onBack) {
-                Icon(Icons.Default.ArrowBack, contentDescription = "Back")
-            }
-            Spacer(modifier = Modifier.width(8.dp))
-            Column {
-                Text(
-                    text = "Applicants",
-                    style = MaterialTheme.typography.headlineMedium,
-                    fontWeight = FontWeight.Bold
-                )
-                Text(
-                    text = "Review and accept a worker",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-        }
+        GradientTopBar(
+            title = "Applicants",
+            subtitle = "Review badges, ratings & accept a Mama Fua",
+            onBackClick = onBack
+        )
 
-        // ── Content ──
         if (uiState.isLoading) {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 CircularProgressIndicator()
@@ -81,7 +59,7 @@ fun ClientJobApplicantsScreen(
             EmptyStateView(
                 icon = Icons.Default.GroupOff,
                 title = "No Applicants Yet",
-                subtitle = "Workers haven't applied to this job yet.",
+                subtitle = "Nearby Mama Fuas haven't applied yet. You can also broadcast Auto-Dispatch!",
                 modifier = Modifier
                     .weight(1f)
                     .widthIn(max = 800.dp)
@@ -97,93 +75,116 @@ fun ClientJobApplicantsScreen(
                 verticalArrangement = Arrangement.spacedBy(16.dp),
                 contentPadding = PaddingValues(vertical = 16.dp)
             ) {
-                itemsIndexed(uiState.applicants) { index, worker ->
-                    var visible by remember { mutableStateOf(false) }
-                    LaunchedEffect(Unit) {
-                        delay(index * 80L)
-                        visible = true
-                    }
-
-                    AnimatedVisibility(
-                        visible = visible,
-                        enter = fadeIn(tween(400)) + slideInVertically(
-                            initialOffsetY = { it / 3 },
-                            animationSpec = tween(400, easing = FastOutSlowInEasing)
-                        )
-                    ) {
-                        PremiumCard {
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Row(verticalAlignment = Alignment.CenterVertically) {
-                                    AvatarCircle(
-                                        name = "Worker ${worker.userId}",
-                                        size = 48.dp
-                                    )
-                                    Spacer(modifier = Modifier.width(12.dp))
-                                    Column {
+                items(uiState.applicants, key = { it.resolvedUserId }) { worker ->
+                    PremiumCard {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.weight(1f)) {
+                                AvatarCircle(name = worker.displayName, size = 48.dp)
+                                Spacer(modifier = Modifier.width(12.dp))
+                                Column {
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
                                         Text(
-                                            text = "Worker ${worker.userId}",
+                                            text = worker.displayName,
                                             style = MaterialTheme.typography.titleMedium,
-                                            fontWeight = FontWeight.Bold,
-                                            color = MaterialTheme.colorScheme.onSurface
+                                            fontWeight = FontWeight.Bold
                                         )
+                                        if (worker.isIdVerified) {
+                                            Spacer(modifier = Modifier.width(6.dp))
+                                            Icon(
+                                                Icons.Default.Verified,
+                                                contentDescription = "ID Verified",
+                                                tint = PremiumTealDark,
+                                                modifier = Modifier.size(18.dp)
+                                            )
+                                        }
+                                    }
+                                    Text(
+                                        text = listOfNotNull(
+                                            worker.estate ?: worker.location,
+                                            if (worker.displayRate > 0) "KES ${worker.displayRate.toInt()}" else null
+                                        ).joinToString(" • ").ifBlank { "Eldoret Mama Fua" },
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = PremiumOrangeDark,
+                                        fontWeight = FontWeight.SemiBold
+                                    )
+                                }
+                            }
+
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(
+                                    imageVector = Icons.Default.Star,
+                                    contentDescription = "Rating",
+                                    tint = PremiumOrange,
+                                    modifier = Modifier.size(18.dp)
+                                )
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text(
+                                    text = String.format("%.1f", worker.averageRating ?: 0.0),
+                                    style = MaterialTheme.typography.titleSmall,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+                        }
+
+                        if (worker.badges.isNotEmpty()) {
+                            Spacer(modifier = Modifier.height(10.dp))
+                            FlowRow(
+                                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                                verticalArrangement = Arrangement.spacedBy(6.dp)
+                            ) {
+                                worker.badges.forEach { badge ->
+                                    Surface(shape = RoundedCornerShape(8.dp), color = PremiumOrangeSurface) {
                                         Text(
-                                            text = "KES ${worker.hourlyRate}/hr",
-                                            style = MaterialTheme.typography.bodySmall,
-                                            fontWeight = FontWeight.SemiBold,
-                                            color = PremiumOrangeDark
+                                            text = badge,
+                                            style = MaterialTheme.typography.labelSmall,
+                                            color = PremiumOrangeDark,
+                                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
                                         )
                                     }
                                 }
-
-                                Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Icon(
-                                        imageVector = Icons.Default.Star,
-                                        contentDescription = "Rating",
-                                        tint = PremiumOrange,
-                                        modifier = Modifier.size(18.dp)
-                                    )
-                                    Spacer(modifier = Modifier.width(4.dp))
-                                    Text(
-                                        text = "${worker.averageRating}",
-                                        style = MaterialTheme.typography.titleSmall,
-                                        fontWeight = FontWeight.Bold
-                                    )
-                                }
                             }
+                        }
 
-                            worker.bio?.let {
-                                Spacer(modifier = Modifier.height(12.dp))
-                                Text(
-                                    text = it,
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    maxLines = 2
-                                )
-                            }
+                        worker.bio?.takeIf { it.isNotBlank() }?.let {
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text(
+                                text = it,
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                maxLines = 2
+                            )
+                        }
 
-                            Spacer(modifier = Modifier.height(16.dp))
+                        Spacer(modifier = Modifier.height(14.dp))
 
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Button(
+                                onClick = { viewModel.acceptApplicant(worker.resolvedUserId) },
+                                colors = ButtonDefaults.buttonColors(containerColor = SuccessGreenDark),
+                                modifier = Modifier.weight(1.2f)
                             ) {
-                                GradientButton(
-                                    text = "Accept",
-                                    onClick = { viewModel.acceptApplicant(worker.resolvedUserId) },
-                                    gradient = AccentGradient,
-                                    icon = Icons.Default.CheckCircle,
-                                    modifier = Modifier.weight(1f)
-                                )
-                                OutlinedButton(
-                                    onClick = { viewModel.rejectApplicant(worker.resolvedUserId) },
-                                    modifier = Modifier.height(56.dp).weight(1f)
-                                ) {
-                                    Text("Reject", color = ErrorRedDark)
-                                }
+                                Icon(Icons.Default.CheckCircle, contentDescription = null, modifier = Modifier.size(18.dp))
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text("Accept")
+                            }
+                            OutlinedButton(
+                                onClick = { viewModel.shortlistApplicant(worker.resolvedUserId) },
+                                modifier = Modifier.weight(1f)
+                            ) {
+                                Text("Shortlist")
+                            }
+                            OutlinedButton(
+                                onClick = { viewModel.rejectApplicant(worker.resolvedUserId) },
+                                modifier = Modifier.weight(0.9f)
+                            ) {
+                                Text("Reject", color = ErrorRedDark)
                             }
                         }
                     }
