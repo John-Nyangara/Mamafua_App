@@ -23,14 +23,15 @@ import com.mamafua.app.presentation.main.NotificationsScreen
 import com.mamafua.app.ui.theme.*
 
 sealed class WorkerTab(val route: String, val title: String, val icon: ImageVector) {
-    object JobFeed : WorkerTab("worker_home", "Job Feed", Icons.Default.Home)
+    object JobFeed : WorkerTab("worker_home", "Radar", Icons.Default.Radar)
     object MyJobs : WorkerTab("worker_my_jobs", "My Jobs", Icons.Default.CheckCircle)
-    object Earnings : WorkerTab("worker_earnings", "Earnings", Icons.Default.Star)
+    object Earnings : WorkerTab("worker_earnings", "Wallet", Icons.Default.AccountBalanceWallet)
     object Profile : WorkerTab("worker_profile", "Profile", Icons.Default.Person)
 }
 
 @Composable
 fun WorkerMainScreen(
+    onRoleSwitched: () -> Unit = {},
     onLogout: () -> Unit
 ) {
     val navController = rememberNavController()
@@ -43,6 +44,7 @@ fun WorkerMainScreen(
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
+        contentWindowInsets = WindowInsets(0, 0, 0, 0),
         bottomBar = {
             Box(
                 modifier = Modifier
@@ -53,20 +55,20 @@ fun WorkerMainScreen(
                 Box(
                     modifier = Modifier
                         .widthIn(max = 500.dp)
-                        .padding(start = 20.dp, end = 20.dp, bottom = 24.dp)
+                        .padding(horizontal = 16.dp, vertical = 6.dp)
                         .shadow(
-                            elevation = 16.dp,
-                            shape = RoundedCornerShape(28.dp),
-                            ambientColor = PremiumOrangeDark.copy(alpha = 0.15f),
-                            spotColor = PremiumOrangeDark.copy(alpha = 0.15f)
+                            elevation = 10.dp,
+                            shape = RoundedCornerShape(24.dp),
+                            ambientColor = PremiumOrangeDark.copy(alpha = 0.12f),
+                            spotColor = PremiumOrangeDark.copy(alpha = 0.12f)
                         )
-                        .clip(RoundedCornerShape(28.dp))
+                        .clip(RoundedCornerShape(24.dp))
                 ) {
                     NavigationBar(
                         containerColor = MaterialTheme.colorScheme.surface,
                         contentColor = MaterialTheme.colorScheme.onSurface,
                         tonalElevation = 0.dp,
-                        modifier = Modifier.height(72.dp)
+                        modifier = Modifier.height(64.dp)
                     ) {
                         val navBackStackEntry by navController.currentBackStackEntryAsState()
                         val currentRoute = navBackStackEntry?.destination?.route
@@ -133,23 +135,41 @@ fun WorkerMainScreen(
                 WorkerHomeScreen(
                     onNavigateToNotifications = {
                         navController.navigate("notifications")
+                    },
+                    onNavigateToActiveJob = { jobId ->
+                        navController.navigate("worker_job_detail/$jobId")
                     }
                 )
             }
             composable(WorkerTab.MyJobs.route) {
-                WorkerMyJobsScreen()
+                WorkerMyJobsScreen(
+                    onOpenActiveJob = { jobId ->
+                        navController.navigate("worker_job_detail/$jobId")
+                    }
+                )
             }
             composable(WorkerTab.Earnings.route) {
                 EarningsScreen()
             }
             composable(WorkerTab.Profile.route) {
                 WorkerProfileScreen(
+                    onRoleSwitched = onRoleSwitched,
                     onLoggedOut = onLogout
+                )
+            }
+            composable("worker_job_detail/{jobId}") { backStackEntry ->
+                val jobId = backStackEntry.arguments?.getString("jobId")?.toIntOrNull() ?: 0
+                WorkerJobDetailScreen(
+                    jobId = jobId,
+                    onBack = { navController.popBackStack() }
                 )
             }
             composable("notifications") {
                 NotificationsScreen(
-                    onBackClick = { navController.popBackStack() }
+                    onBackClick = { navController.popBackStack() },
+                    onOpenJob = { jobId ->
+                        navController.navigate("worker_job_detail/$jobId")
+                    }
                 )
             }
         }

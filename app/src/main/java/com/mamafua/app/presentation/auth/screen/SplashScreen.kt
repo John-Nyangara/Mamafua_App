@@ -27,14 +27,12 @@ fun SplashScreen(
 ) {
     var isTimerDone by remember { mutableStateOf(false) }
 
-    // ── Logo animation ──
     val logoAlpha = remember { Animatable(0f) }
     val logoScale = remember { Animatable(0.5f) }
     val textAlpha = remember { Animatable(0f) }
     val textOffset = remember { Animatable(30f) }
     val subtitleAlpha = remember { Animatable(0f) }
 
-    // Pulsing ring animation
     val infiniteTransition = rememberInfiniteTransition(label = "splash_pulse")
     val pulseScale by infiniteTransition.animateFloat(
         initialValue = 1f,
@@ -55,10 +53,8 @@ fun SplashScreen(
         label = "pulse_alpha"
     )
 
-    // Animate sequence
     LaunchedEffect(Unit) {
-        // Logo fade-in + scale with overshoot
-        logoAlpha.animateTo(1f, animationSpec = tween(600, easing = FastOutSlowInEasing))
+        logoAlpha.animateTo(1f, animationSpec = tween(500, easing = FastOutSlowInEasing))
         logoScale.animateTo(
             1f,
             animationSpec = spring(
@@ -66,14 +62,12 @@ fun SplashScreen(
                 stiffness = Spring.StiffnessLow
             )
         )
-        delay(200)
-        // Text slides up + fades in
-        textAlpha.animateTo(1f, animationSpec = tween(500))
-        textOffset.animateTo(0f, animationSpec = tween(500, easing = FastOutSlowInEasing))
-        delay(200)
-        // Subtitle fades in
-        subtitleAlpha.animateTo(1f, animationSpec = tween(400))
-        delay(600)
+        delay(150)
+        textAlpha.animateTo(1f, animationSpec = tween(400))
+        textOffset.animateTo(0f, animationSpec = tween(400, easing = FastOutSlowInEasing))
+        delay(150)
+        subtitleAlpha.animateTo(1f, animationSpec = tween(350))
+        delay(450)
         isTimerDone = true
     }
 
@@ -82,6 +76,7 @@ fun SplashScreen(
             val targetRoute = when (authState) {
                 is AuthState.AuthenticatedClient -> "client_main"
                 is AuthState.AuthenticatedWorker -> "worker_main"
+                is AuthState.AuthenticatedAdmin -> "admin_main"
                 is AuthState.Unauthenticated -> "login"
                 is AuthState.Loading -> "login"
             }
@@ -95,34 +90,22 @@ fun SplashScreen(
             .background(brush = SplashGradient),
         contentAlignment = Alignment.Center
     ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            // Pulsing ring + Logo circle
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Box(contentAlignment = Alignment.Center) {
-                // Outer pulsing ring
                 Box(
                     modifier = Modifier
                         .size(140.dp)
                         .scale(pulseScale)
                         .graphicsLayer { alpha = pulseAlpha }
-                        .background(
-                            color = PremiumTeal.copy(alpha = 0.3f),
-                            shape = CircleShape
-                        )
+                        .background(color = PremiumTeal.copy(alpha = 0.3f), shape = CircleShape)
                 )
-                // Second pulse ring
                 Box(
                     modifier = Modifier
                         .size(120.dp)
                         .scale(pulseScale * 0.85f)
                         .graphicsLayer { alpha = pulseAlpha * 0.6f }
-                        .background(
-                            color = PremiumTeal.copy(alpha = 0.2f),
-                            shape = CircleShape
-                        )
+                        .background(color = PremiumTeal.copy(alpha = 0.2f), shape = CircleShape)
                 )
-                // Logo circle
                 Box(
                     modifier = Modifier
                         .size(100.dp)
@@ -131,10 +114,7 @@ fun SplashScreen(
                             scaleX = logoScale.value
                             scaleY = logoScale.value
                         }
-                        .background(
-                            color = Color.White.copy(alpha = 0.15f),
-                            shape = CircleShape
-                        ),
+                        .background(color = Color.White.copy(alpha = 0.15f), shape = CircleShape),
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
@@ -148,7 +128,6 @@ fun SplashScreen(
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            // App name
             Text(
                 text = "Mama Fua",
                 style = MaterialTheme.typography.displayLarge,
@@ -162,14 +141,11 @@ fun SplashScreen(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // Subtitle
             Text(
-                text = "Connecting Homes to Trusted Help",
+                text = "Eldoret's Trusted Laundry & Home Cleaning",
                 style = MaterialTheme.typography.bodyLarge,
-                color = Color.White.copy(alpha = 0.8f),
-                modifier = Modifier.graphicsLayer {
-                    alpha = subtitleAlpha.value
-                }
+                color = Color.White.copy(alpha = 0.85f),
+                modifier = Modifier.graphicsLayer { alpha = subtitleAlpha.value }
             )
         }
     }

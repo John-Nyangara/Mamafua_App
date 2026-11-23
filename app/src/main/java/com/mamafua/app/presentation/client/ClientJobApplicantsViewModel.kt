@@ -21,7 +21,7 @@ class ClientJobApplicantsViewModel(
         loadApplicants()
     }
 
-    private fun loadApplicants() {
+    fun loadApplicants() {
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isLoading = true)
             when (val result = jobRepository.getJobApplicants(jobId)) {
@@ -42,6 +42,21 @@ class ClientJobApplicantsViewModel(
         }
     }
 
+    fun shortlistApplicant(workerId: Int) {
+        viewModelScope.launch {
+            when (val result = jobRepository.shortlistWorker(jobId, workerId)) {
+                is Resource.Success -> {
+                    _uiState.value = _uiState.value.copy(successMessage = "Applicant shortlisted!")
+                    loadApplicants()
+                }
+                is Resource.Error -> {
+                    _uiState.value = _uiState.value.copy(error = result.message ?: "Failed to shortlist")
+                }
+                else -> Unit
+            }
+        }
+    }
+
     fun acceptApplicant(workerId: Int) {
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isLoading = true)
@@ -49,7 +64,7 @@ class ClientJobApplicantsViewModel(
                 is Resource.Success -> {
                     _uiState.value = _uiState.value.copy(
                         isLoading = false,
-                        successMessage = "Worker accepted successfully!",
+                        successMessage = "Mama Fua accepted! 4-digit Start PIN generated.",
                         acceptedWorker = true
                     )
                 }
@@ -71,7 +86,7 @@ class ClientJobApplicantsViewModel(
                 is Resource.Success -> {
                     _uiState.value = _uiState.value.copy(
                         isLoading = false,
-                        successMessage = "Worker rejected successfully!"
+                        successMessage = "Applicant rejected"
                     )
                     loadApplicants()
                 }
@@ -85,7 +100,7 @@ class ClientJobApplicantsViewModel(
             }
         }
     }
-    
+
     fun clearMessages() {
         _uiState.value = _uiState.value.copy(successMessage = null, error = null, acceptedWorker = false)
     }

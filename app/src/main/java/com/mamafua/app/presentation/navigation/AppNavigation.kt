@@ -8,6 +8,7 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.mamafua.app.presentation.admin.AdminMainScreen
 import com.mamafua.app.presentation.auth.screen.ForgotPasswordScreen
 import com.mamafua.app.presentation.auth.screen.LoginScreen
 import com.mamafua.app.presentation.auth.screen.RegisterScreen
@@ -24,6 +25,12 @@ fun AppNavigation(
 ) {
     val navController = rememberNavController()
     val authState = mainViewModel.authState.collectAsState().value
+
+    val routeBackToSplash: () -> Unit = {
+        navController.navigate("splash") {
+            popUpTo(0) { inclusive = true }
+        }
+    }
 
     NavHost(
         navController = navController,
@@ -80,6 +87,7 @@ fun AppNavigation(
         ) {
             LoginScreen(
                 onNavigateToRegister = { navController.navigate("register") },
+                onNavigateToForgotPassword = { navController.navigate("forgot_password") },
                 onLoginSuccess = {
                     navController.navigate("splash") { popUpTo("login") { inclusive = true } }
                 }
@@ -111,11 +119,8 @@ fun AppNavigation(
             }
         ) {
             ClientMainScreen(
-                onLogout = {
-                    navController.navigate("splash") {
-                        popUpTo(0) { inclusive = true }
-                    }
-                }
+                onRoleSwitched = routeBackToSplash,
+                onLogout = routeBackToSplash
             )
         }
 
@@ -129,11 +134,15 @@ fun AppNavigation(
             }
         ) {
             WorkerMainScreen(
-                onLogout = {
-                    navController.navigate("splash") {
-                        popUpTo(0) { inclusive = true }
-                    }
-                }
+                onRoleSwitched = routeBackToSplash,
+                onLogout = routeBackToSplash
+            )
+        }
+
+        composable("admin_main") {
+            AdminMainScreen(
+                onRoleSwitched = routeBackToSplash,
+                onLogout = routeBackToSplash
             )
         }
     }

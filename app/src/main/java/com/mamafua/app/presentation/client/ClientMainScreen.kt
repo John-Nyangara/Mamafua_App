@@ -1,9 +1,7 @@
 package com.mamafua.app.presentation.client
 
 import androidx.compose.animation.core.*
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -25,26 +23,32 @@ import com.mamafua.app.presentation.main.NotificationsScreen
 import com.mamafua.app.ui.theme.*
 
 sealed class ClientTab(val route: String, val title: String, val icon: ImageVector) {
-    object Explore : ClientTab("client_home", "Explore", Icons.Default.Search)
-    object PostJob : ClientTab("post_job", "Post Job", Icons.Default.AddCircle)
-    object MyJobs : ClientTab("client_my_jobs", "My Jobs", Icons.Default.CheckCircle)
+    object Home : ClientTab("client_home", "Home", Icons.Default.Home)
+    object PostJob : ClientTab("client_post_job", "Book", Icons.Default.AddCircle)
+    object MyJobs : ClientTab("client_my_jobs", "My Jobs", Icons.Default.List)
     object Profile : ClientTab("client_profile", "Profile", Icons.Default.Person)
 }
 
 @Composable
 fun ClientMainScreen(
+    onRoleSwitched: () -> Unit = {},
     onLogout: () -> Unit
 ) {
     val navController = rememberNavController()
     val items = listOf(
-        ClientTab.Explore,
+        ClientTab.Home,
         ClientTab.PostJob,
         ClientTab.MyJobs,
         ClientTab.Profile
     )
 
+    var selectedCategoryForBooking by remember { mutableStateOf<String?>(null) }
+    var preselectedWorkerIdForBooking by remember { mutableStateOf<Int?>(null) }
+    var preselectedWorkerNameForBooking by remember { mutableStateOf<String?>(null) }
+
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
+        contentWindowInsets = WindowInsets(0, 0, 0, 0),
         bottomBar = {
             Box(
                 modifier = Modifier
@@ -55,20 +59,20 @@ fun ClientMainScreen(
                 Box(
                     modifier = Modifier
                         .widthIn(max = 500.dp)
-                        .padding(start = 20.dp, end = 20.dp, bottom = 24.dp)
+                        .padding(horizontal = 16.dp, vertical = 6.dp)
                         .shadow(
-                            elevation = 16.dp,
-                            shape = RoundedCornerShape(28.dp),
-                            ambientColor = PremiumTealDark.copy(alpha = 0.15f),
-                            spotColor = PremiumTealDark.copy(alpha = 0.15f)
+                            elevation = 10.dp,
+                            shape = RoundedCornerShape(24.dp),
+                            ambientColor = PremiumTealDark.copy(alpha = 0.12f),
+                            spotColor = PremiumTealDark.copy(alpha = 0.12f)
                         )
-                        .clip(RoundedCornerShape(28.dp))
+                        .clip(RoundedCornerShape(24.dp))
                 ) {
                     NavigationBar(
                         containerColor = MaterialTheme.colorScheme.surface,
                         contentColor = MaterialTheme.colorScheme.onSurface,
                         tonalElevation = 0.dp,
-                        modifier = Modifier.height(72.dp)
+                        modifier = Modifier.height(64.dp)
                     ) {
                         val navBackStackEntry by navController.currentBackStackEntryAsState()
                         val currentRoute = navBackStackEntry?.destination?.route
@@ -128,47 +132,97 @@ fun ClientMainScreen(
     ) { innerPadding ->
         NavHost(
             navController = navController,
-            startDestination = ClientTab.Explore.route,
+            startDestination = ClientTab.Home.route,
             modifier = Modifier.padding(innerPadding)
         ) {
-            composable(ClientTab.Explore.route) {
+            composable(ClientTab.Home.route) {
                 ClientHomeScreen(
                     onNavigateToNotifications = {
                         navController.navigate("notifications")
+                    },
+                    onNavigateToCustomizer = { category, workerId, workerName ->
+                        selectedCategoryForBooking = category
+                        preselectedWorkerIdForBooking = workerId
+                        preselectedWorkerNameForBooking = workerName
+                        navController.navigate(ClientTab.PostJob.route) {
+                            popUpTo(navController.graph.findStartDestination().id) {
+                                saveState = true
+                            }
+                            launchSingleTop = true
+                            restoreState = true
+                        }
+                    },
+                    onNavigateToJobDetail = { jobId ->
+                        navController.navigate("client_job_detail/$jobId")
                     }
                 )
             }
             composable(ClientTab.PostJob.route) {
                 PostJobScreen(
-                    onJobPosted = {
-                        navController.navigate(ClientTab.MyJobs.route) {
-                            popUpTo(ClientTab.Explore.route)
+                    initialCategory = selectedCategoryForBooking,
+                    preselectedWorkerId = preselectedWorkerIdForBooking,
+                    preselectedWorkerName = preselectedWorkerNameForBooking,
+                    onJobPosted = { jobId ->
+                        selectedCategoryForBooking = null
+                        preselectedWorkerIdForBooking = null
+                        preselectedWorkerNameForBooking = null
+                        if (jobId > 0) {
+                            navController.navigate("client_job_detail/$jobId")
+                        } else {
+                            navController.navigate(ClientTab.MyJobs.route) {
+                                popUpTo(navController.graph.findStartDestination().id) {
+                                    saveState = true
+                                }
+                                launchSingleTop = true
+                            }
                         }
                     }
                 )
             }
             composable(ClientTab.MyJobs.route) {
                 ClientMyJobsScreen(
-                    onNavigateToApplicants = { jobId ->
-                        navController.navigate("client_job_applicants/$jobId")
+                    onViewApplicants = { jobId ->
+                        navController.navigate("applicants/$jobId")
+                    },
+                    onOpenJobDetail = { jobId ->
+                        navController.navigate("client_job_detail/$jobId")
                     }
                 )
             }
             composable(ClientTab.Profile.route) {
                 ClientProfileScreen(
+                    onRoleSwitched = onRoleSwitched,
                     onLoggedOut = onLogout
                 )
             }
-            composable("client_job_applicants/{jobId}") { backStackEntry ->
+            composable("client_job_detail/{jobId}") { backStackEntry ->
                 val jobId = backStackEntry.arguments?.getString("jobId")?.toIntOrNull() ?: 0
-                ClientJobApplicantsScreen(
+                ClientJobDetailScreen(
                     jobId = jobId,
-                    onBack = { navController.popBackStack() }
+                    onBack = { navController.popBackStack() },
+                    onNavigateToApplicants = { id ->
+                        navController.navigate("applicants/$id")
+                    }
                 )
             }
             composable("notifications") {
                 NotificationsScreen(
-                    onBackClick = { navController.popBackStack() }
+                    onBackClick = { navController.popBackStack() },
+                    onOpenJob = { jobId ->
+                        navController.navigate("client_job_detail/$jobId")
+                    }
+                )
+            }
+            composable("applicants/{jobId}") { backStackEntry ->
+                val jobId = backStackEntry.arguments?.getString("jobId")?.toIntOrNull() ?: 0
+                ClientJobApplicantsScreen(
+                    jobId = jobId,
+                    onBack = { navController.popBackStack() },
+                    onAccepted = { acceptedJobId ->
+                        navController.navigate("client_job_detail/$acceptedJobId") {
+                            popUpTo("applicants/$jobId") { inclusive = true }
+                        }
+                    }
                 )
             }
         }

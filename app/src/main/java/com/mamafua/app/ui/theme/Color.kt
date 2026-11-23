@@ -31,6 +31,12 @@ val ErrorRedSurface = Color(0xFFFFEBEE)
 val WarningAmber = Color(0xFFFFC107)
 val WarningAmberDark = Color(0xFFFF8F00)
 
+// ── Compatibility Aliases ──
+val PremiumPurple = PremiumTeal
+val PremiumPurpleDark = PremiumTealDark
+val PremiumPurpleSurface = PremiumTealSurface
+val WarningYellow = WarningAmber
+
 // ── Status Colors ──
 val StatusAvailable = Color(0xFF2DC653)
 val StatusBusy = Color(0xFFFFC107)

@@ -26,8 +26,10 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.VisualTransformation
+import coil.compose.AsyncImage
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -329,7 +331,8 @@ fun GradientTopBar(
         modifier = modifier
             .fillMaxWidth()
             .background(gradient)
-            .padding(top = 48.dp, bottom = 24.dp, start = 20.dp, end = 20.dp)
+            .statusBarsPadding()
+            .padding(top = 12.dp, bottom = 18.dp, start = 20.dp, end = 20.dp)
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -458,6 +461,7 @@ fun EmptyStateView(
 @Composable
 fun AvatarCircle(
     name: String,
+    imageUrl: String? = null,
     modifier: Modifier = Modifier,
     size: Dp = 56.dp,
     borderGradient: Brush = PrimaryGradientHorizontal,
@@ -480,15 +484,25 @@ fun AvatarCircle(
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(color = backgroundColor, shape = CircleShape),
+                .background(color = backgroundColor, shape = CircleShape)
+                .clip(CircleShape),
             contentAlignment = Alignment.Center
         ) {
-            Text(
-                text = initials,
-                color = Color.White,
-                fontWeight = FontWeight.Bold,
-                fontSize = (size.value * 0.35f).sp
-            )
+            if (imageUrl != null) {
+                AsyncImage(
+                    model = imageUrl,
+                    contentDescription = name,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier.fillMaxSize()
+                )
+            } else {
+                Text(
+                    text = initials,
+                    color = Color.White,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = (size.value * 0.35f).sp
+                )
+            }
         }
     }
 }
