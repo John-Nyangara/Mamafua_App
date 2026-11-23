@@ -456,6 +456,10 @@ class JobRepositoryImpl(
         }
     }
 
+    override fun getJob(jobId: Int): Flow<Job?> {
+        return jobDao.getJob(jobId).map { it?.toDomain() }
+    }
+
     override suspend fun createJob(
         title: String,
         description: String,

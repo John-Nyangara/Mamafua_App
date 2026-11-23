@@ -72,6 +72,7 @@ interface JobRepository {
     suspend fun fetchMyApplications(): Resource<List<Job>>
     fun getActiveJobs(): Flow<List<Job>>
     suspend fun getJobById(jobId: Int): Resource<Job>
+    fun getJob(jobId: Int): Flow<Job?>
     suspend fun createJob(title: String, description: String, location: String, budget: Double): Resource<Job>
     suspend fun createCustomJob(request: CreateJobRequest): Resource<Job>
     suspend fun rebookJob(workerId: Int? = null, isInstant: Boolean = true, scheduledAt: String? = null): Resource<Job>

@@ -35,6 +35,9 @@ import com.mamafua.app.presentation.worker.WorkerHomeViewModel
 import com.mamafua.app.presentation.worker.WorkerJobDetailViewModel
 import com.mamafua.app.presentation.worker.WorkerMyJobsViewModel
 import com.mamafua.app.presentation.worker.WorkerProfileViewModel
+import com.mamafua.app.presentation.job.JobDetailsViewModel
+import com.mamafua.app.presentation.profile.ProfileViewModel
+import com.mamafua.app.presentation.payment.PaymentViewModel
 import org.koin.android.ext.koin.androidContext
 import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.dsl.module
@@ -84,6 +87,9 @@ val viewModelModule = module {
     viewModel { WorkerProfileViewModel(get(), get(), get()) }
     viewModel { NotificationsViewModel(get()) }
     viewModel { AdminPortalViewModel(get(), get(), get(), get()) }
+    viewModel { JobDetailsViewModel(get(), get()) }
+    viewModel { ProfileViewModel(get(), get()) }
+    viewModel { PaymentViewModel(get(), get()) }
 }
 
 val appModules = listOf(appModule, repositoryModule, viewModelModule)

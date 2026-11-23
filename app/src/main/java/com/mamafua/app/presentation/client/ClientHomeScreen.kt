@@ -92,6 +92,16 @@ fun ClientHomeScreen(
                 }
             }
         )
+=======
+    Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
+            Text("Nearby Workers", style = MaterialTheme.typography.headlineMedium)
+            TextButton(onClick = onNavigateToProfile) {
+                Text("Profile")
+            }
+        }
+        Spacer(modifier = Modifier.height(16.dp))
+>>>>>>> main
 
         LazyColumn(
             modifier = Modifier
