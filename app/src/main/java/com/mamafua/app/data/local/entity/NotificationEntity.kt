@@ -13,7 +13,7 @@ data class NotificationEntity(
     val body: String,
     val data: String?,
     val isRead: Boolean,
-    val createdAt: String
+    val createdAt: String?
 ) {
     fun toDomain(): Notification {
         return Notification(id, userId, type, title, body, data, isRead, createdAt)

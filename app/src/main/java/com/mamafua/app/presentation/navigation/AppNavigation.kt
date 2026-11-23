@@ -1,25 +1,21 @@
 package com.mamafua.app.presentation.navigation
 
+import androidx.compose.animation.*
+import androidx.compose.animation.core.tween
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
-import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import androidx.navigation.navArgument
+import com.mamafua.app.presentation.admin.AdminMainScreen
 import com.mamafua.app.presentation.auth.screen.ForgotPasswordScreen
 import com.mamafua.app.presentation.auth.screen.LoginScreen
 import com.mamafua.app.presentation.auth.screen.RegisterScreen
 import com.mamafua.app.presentation.auth.screen.SplashScreen
-import com.mamafua.app.presentation.client.ClientHomeScreen
-import com.mamafua.app.presentation.job.JobDetailsScreen
-import com.mamafua.app.presentation.payment.PaymentStkScreen
-import com.mamafua.app.presentation.profile.ClientProfileScreen
-import com.mamafua.app.presentation.profile.WorkerProfileScreen
-import com.mamafua.app.presentation.main.viewmodel.AuthState
+import com.mamafua.app.presentation.client.ClientMainScreen
 import com.mamafua.app.presentation.main.viewmodel.MainViewModel
-import com.mamafua.app.presentation.worker.WorkerHomeScreen
+import com.mamafua.app.presentation.worker.WorkerMainScreen
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
@@ -30,28 +26,74 @@ fun AppNavigation(
     val navController = rememberNavController()
     val authState = mainViewModel.authState.collectAsState().value
 
-    NavHost(navController = navController, startDestination = "splash", modifier = modifier) {
-        composable("splash") {
+    val routeBackToSplash: () -> Unit = {
+        navController.navigate("splash") {
+            popUpTo(0) { inclusive = true }
+        }
+    }
+
+    NavHost(
+        navController = navController,
+        startDestination = "splash",
+        modifier = modifier,
+        enterTransition = {
+            fadeIn(animationSpec = tween(300)) + slideInHorizontally(
+                initialOffsetX = { it / 4 },
+                animationSpec = tween(300)
+            )
+        },
+        exitTransition = {
+            fadeOut(animationSpec = tween(300)) + slideOutHorizontally(
+                targetOffsetX = { -it / 4 },
+                animationSpec = tween(300)
+            )
+        },
+        popEnterTransition = {
+            fadeIn(animationSpec = tween(300)) + slideInHorizontally(
+                initialOffsetX = { -it / 4 },
+                animationSpec = tween(300)
+            )
+        },
+        popExitTransition = {
+            fadeOut(animationSpec = tween(300)) + slideOutHorizontally(
+                targetOffsetX = { it / 4 },
+                animationSpec = tween(300)
+            )
+        }
+    ) {
+        composable(
+            "splash",
+            enterTransition = { fadeIn(tween(0)) },
+            exitTransition = { fadeOut(tween(400)) }
+        ) {
             SplashScreen(
-                onSplashComplete = {
-                    when (authState) {
-                        is AuthState.AuthenticatedClient -> navController.navigate("client_home") { popUpTo("splash") { inclusive = true } }
-                        is AuthState.AuthenticatedWorker -> navController.navigate("worker_home") { popUpTo("splash") { inclusive = true } }
-                        is AuthState.Unauthenticated -> navController.navigate("login") { popUpTo("splash") { inclusive = true } }
-                        is AuthState.Loading -> { /* Wait for state to resolve */ }
+                authState = authState,
+                onSplashComplete = { targetRoute ->
+                    navController.navigate(targetRoute) {
+                        popUpTo("splash") { inclusive = true }
                     }
                 }
             )
         }
-        
-        composable("login") {
+
+        composable(
+            "login",
+            enterTransition = {
+                fadeIn(tween(400)) + slideInVertically(
+                    initialOffsetY = { it / 3 },
+                    animationSpec = tween(400)
+                )
+            }
+        ) {
             LoginScreen(
                 onNavigateToRegister = { navController.navigate("register") },
-                onLoginSuccess = { 
+                onNavigateToForgotPassword = { navController.navigate("forgot_password") },
+                onLoginSuccess = {
                     navController.navigate("splash") { popUpTo("login") { inclusive = true } }
                 }
             )
         }
+
         composable("register") {
             RegisterScreen(
                 onNavigateToLogin = { navController.popBackStack() },
@@ -60,46 +102,47 @@ fun AppNavigation(
                 }
             )
         }
+
         composable("forgot_password") {
             ForgotPasswordScreen(
                 onNavigateBack = { navController.popBackStack() }
             )
         }
 
-        composable("client_home") {
-            ClientHomeScreen(
-                onNavigateToProfile = { navController.navigate("client_profile") }
-            )
-        }
-        composable("worker_home") {
-            WorkerHomeScreen(
-                onNavigateToJobDetails = { jobId -> navController.navigate("job_details/$jobId") },
-                onNavigateToProfile = { navController.navigate("worker_profile") }
-            )
-        }
         composable(
-            route = "job_details/{jobId}",
-            arguments = listOf(navArgument("jobId") { type = NavType.IntType })
+            "client_main",
+            enterTransition = {
+                fadeIn(tween(400)) + scaleIn(
+                    initialScale = 0.95f,
+                    animationSpec = tween(400)
+                )
+            }
         ) {
-            val isClient = authState is AuthState.AuthenticatedClient
-            JobDetailsScreen(
-                isClient = isClient,
-                onNavigateToPayment = { jobId -> navController.navigate("payment/$jobId") }
+            ClientMainScreen(
+                onRoleSwitched = routeBackToSplash,
+                onLogout = routeBackToSplash
             )
         }
-        
-        composable("client_profile") {
-            ClientProfileScreen()
-        }
-        composable("worker_profile") {
-            WorkerProfileScreen()
-        }
+
         composable(
-            route = "payment/{jobId}",
-            arguments = listOf(navArgument("jobId") { type = NavType.IntType })
+            "worker_main",
+            enterTransition = {
+                fadeIn(tween(400)) + scaleIn(
+                    initialScale = 0.95f,
+                    animationSpec = tween(400)
+                )
+            }
         ) {
-            PaymentStkScreen(
-                onPaymentComplete = { navController.popBackStack() }
+            WorkerMainScreen(
+                onRoleSwitched = routeBackToSplash,
+                onLogout = routeBackToSplash
+            )
+        }
+
+        composable("admin_main") {
+            AdminMainScreen(
+                onRoleSwitched = routeBackToSplash,
+                onLogout = routeBackToSplash
             )
         }
     }

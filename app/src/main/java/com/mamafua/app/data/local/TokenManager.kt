@@ -21,4 +21,34 @@ class TokenManager(context: Context) {
             remove("jwt_token")
         }
     }
+
+    fun saveAppliedJob(jobId: Int) {
+        val jobs = getAppliedJobs().map { it.toString() }.toMutableSet()
+        jobs.add(jobId.toString())
+        prefs.edit {
+            putStringSet("applied_jobs", jobs)
+        }
+    }
+
+    fun removeAppliedJob(jobId: Int) {
+        val jobs = getAppliedJobs().filter { it != jobId }.map { it.toString() }.toSet()
+        prefs.edit {
+            putStringSet("applied_jobs", jobs)
+        }
+    }
+
+    fun getAppliedJobs(): Set<Int> {
+        val jobs = prefs.getStringSet("applied_jobs", emptySet()) ?: emptySet()
+        return jobs.mapNotNull { it.toIntOrNull() }.toSet()
+    }
+
+    fun saveAvailabilityStatus(status: String) {
+        prefs.edit {
+            putString("worker_availability_status", status)
+        }
+    }
+
+    fun getAvailabilityStatus(): String {
+        return prefs.getString("worker_availability_status", "online") ?: "online"
+    }
 }

@@ -1,5 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <style name="Theme.Mamafua" parent="android:Theme.Material.Light.NoActionBar" />
+    <style name="Theme.Mamafua.Base" parent="android:Theme.Material.Light.NoActionBar" />
+
+    <style name="Theme.Mamafua" parent="Theme.SplashScreen">
+        <!-- Set the splash screen background, animated icon, and animation duration. -->
+        <item name="windowSplashScreenBackground">#0096C7</item>
+        <!-- Use the same icon that you will generate with Image Asset Studio -->
+        <item name="windowSplashScreenAnimatedIcon">@mipmap/ic_launcher_round</item>
+        <!-- Set the theme of the Activity that directly follows your splash screen. -->
+        <item name="postSplashScreenTheme">@style/Theme.Mamafua.Base</item>
+    </style>
 </resources>
